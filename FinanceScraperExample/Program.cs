@@ -23,7 +23,27 @@ namespace FinanceScraperExample
             // Execute the request
             IRestResponse response = client.Execute(request);
             var content = response.Content;// raw content as string 
-            Console.WriteLine(content);            
+            //Console.WriteLine(content);
+
+            var deserializedContent = JsonConvert.DeserializeObject(content); // returns as object
+            //Console.WriteLine(deserializedContent);
+
+            JArray output = new JArray(deserializedContent);
+
+            foreach (var item in output.Children<JObject>())
+            {
+                foreach (JProperty prop in item.Properties())
+                {
+                    Console.WriteLine("symbol:  " + prop.Value["quote"]["symbol"]);
+                    Console.WriteLine("companyName:  " + prop.Value["quote"]["companyName"]);
+                    Console.WriteLine("sector:  " + prop.Value["quote"]["sector"]);
+                    Console.WriteLine("openPrice:  " + prop.Value["quote"]["open"]);
+                    Console.WriteLine("closePrice:  " + prop.Value["quote"]["close"]);
+                    Console.WriteLine("latestPrice:  " + prop.Value["quote"]["latestPrice"]);
+                    Console.WriteLine("marketCap:  " + prop.Value["quote"]["marketCap"]);
+                    Console.WriteLine();
+                }
+            }
         }
     }
 }
