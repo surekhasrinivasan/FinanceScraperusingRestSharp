@@ -44,6 +44,37 @@ namespace FinanceScraperExample
                     Console.WriteLine();
                 }
             }
+
+            var connString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=SelectedStocksDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                // delete all previous stocks 
+                SqlCommand deleteAll = new SqlCommand("DELETE FROM Stock", conn);
+                deleteAll.ExecuteNonQuery();
+
+                // insert stocks into Stock table
+                foreach (var item in output.Children<JObject>())
+                {
+                    foreach (JProperty prop in item.Properties())
+                    {
+                        SqlCommand insertCommand = new SqlCommand("INSERT INTO [Stock] (symbol, companyName, sector,openPrice, closePrice, latestPrice, marketCap) VALUES (@symbol, @companyName, @sector, @openPrice, @closePrice, @latestPrice, @marketCap)", conn);
+
+                        insertCommand.Parameters.AddWithValue("@symbol", (string)prop.Value["quote"]["symbol"]);
+                        insertCommand.Parameters.AddWithValue("@companyName", (string)prop.Value["quote"]["companyName"]);
+                        insertCommand.Parameters.AddWithValue("@sector", (string)prop.Value["quote"]["sector"]);
+                        insertCommand.Parameters.AddWithValue("@openPrice", (string)prop.Value["quote"]["open"]);
+                        insertCommand.Parameters.AddWithValue("@closePrice", (string)prop.Value["quote"]["close"]);
+                        insertCommand.Parameters.AddWithValue("@latestPrice", (string)prop.Value["quote"]["latestPrice"]);
+                        insertCommand.Parameters.AddWithValue("@marketCap", (string)prop.Value["quote"]["marketCap"]);
+                        insertCommand.ExecuteNonQuery();
+                    }
+                }
+                Console.WriteLine("Database updated");
+                conn.Close();
+            }
         }
     }
 }
